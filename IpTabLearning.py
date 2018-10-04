@@ -680,7 +680,7 @@ if __name__ == "__main__":
     #print("A matriz de confusão..:{}".format(aplicacao.ImprimeMatrizConfusao()))
 
     ### Mostra a Acurária
-    print("A acuracia..:{:.2f}%".format(aplicacao.ImprimeAcuracia()*100))
+    #print("A acuracia..:{:.2f}%".format(aplicacao.ImprimeAcuracia()*100))
 
     ### Imprime dos erros.
     #aplicacao.ImprimeErros()
