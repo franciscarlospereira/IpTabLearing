@@ -112,7 +112,7 @@ class IptablesLearning():
         novo = aplicacao.extrator_palavras(testestemming)
         resultado = (aplicacao.classificador.classify(novo))
 
-        print ("resultado..:{}".format(resultado))
+        #print ("resultado..:{}".format(resultado))
 
         if (resultado == 'https brute force'):
             lista_regras = []
