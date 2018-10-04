@@ -18,7 +18,6 @@ from random import randint
 ### Modulo para implementar interface gráfica
 from tkinter import *
 
-
 class IptablesLearning():
     ### O construtor da classe IpTablesLearning cria os elementos gráficos (widgets).
     def __init__(self, largura, altura, master=None):
@@ -32,7 +31,7 @@ class IptablesLearning():
 
         self.tam_borda_titulo = int(int(self.largura) * (float(0.065)))
         self.tam_borda_esq = int(int(self.largura) * (float(0.10)))
-        self.tam_borda_botoes = int(int(self.largura) * (float(0.40)))
+        self.tam_borda_botoes = int(int(self.largura) * (float(0.35)))
         self.tam_borda_interior = int(int(self.largura) * (float(0.001)))
 
         # primeiro frame do formulario
@@ -76,7 +75,7 @@ class IptablesLearning():
         self.frame_regras.pack(side=TOP)
         self.frame_regras.pack_propagate(0)
 
-        self.regras = Label(self.frame_regras, justify=LEFT)
+        self.regras = Label(self.frame_regras, justify=LEFT, wraplength=self.largura)
         self.regras.pack(side=TOP, anchor=NW)
         self.regras.pack_propagate(0)
 
@@ -550,10 +549,10 @@ class IptablesLearning():
             previsto.append(resultado)
             esperado.append(classe)
 
-        matriz = ConfusionMatrix(esperado, previsto)
+        self.matriz = ConfusionMatrix(esperado, previsto)
 
         ### retorna a matriz de confusão
-        return matriz
+        return self.matriz
 
     ### criar uma lista de stopwords é util quando queremos remover stopwords
     ### muito especificas para o escopo de nossa aplicaÃ§Ã£o.
@@ -636,7 +635,6 @@ class IptablesLearning():
         return base
 
 
-
 def CarregaArquivo():
     X = []
 
@@ -679,11 +677,10 @@ if __name__ == "__main__":
 
 
     ### Mostra a matriz de confusão
-    #print("A matriz de confusão..:{}".format(aplicacao.ImprimeMatrizConfusao())
+    #print("A matriz de confusão..:{}".format(aplicacao.ImprimeMatrizConfusao()))
 
     ### Mostra a Acurária
     #print("A acuracia..:{}".format(aplicacao.ImprimeAcuracia()))
-
 
     ### Imprime dos erros.
     #aplicacao.ImprimeErros()
