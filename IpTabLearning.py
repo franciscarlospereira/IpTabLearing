@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+#http://pydoc.net/infer/0.1/infer.classify/
+
 ###biblioteca para processamento de linuguagem natural.
 import nltk
 
@@ -10,7 +12,10 @@ import nltk
 import csv
 
 ### Modulo para criar a matriz de confusão.
-from nltk.metrics import ConfusionMatrix
+#from nltk.metrics import ConfusionMatrix
+
+#precision
+from nltk.metrics import *
 
 ### Módulo para trabalhar com aleatório.
 from random import randint
@@ -88,6 +93,7 @@ class IptablesLearning():
         self.explicacao.pack_propagate(0)
 
 
+
     def Pesquisar(self):
 
         ### pega as informações digitadas no widget Text.
@@ -110,7 +116,12 @@ class IptablesLearning():
 
         #print (testestemming)
         novo = aplicacao.extrator_palavras(testestemming)
-        resultado = (aplicacao.classificador.classify(novo))
+        resultado = aplicacao.classificador.classify(novo)
+
+        ### Imprime a distribuição de probabilidade.
+        #distribuicao = aplicacao.classificador.prob_classify(novo)
+        #for classe in distribuicao.samples():
+        #    print ("{} {:.2f}".format(classe, distribuicao.prob(classe)))
 
         #print ("resultado..:{}".format(resultado))
 
@@ -501,7 +512,10 @@ class IptablesLearning():
         self.palavras_unicas_treinamento = self.busca_palavras_unicas(self.frequenciatreinamento)
         self.palavras_unicas_teste = self.busca_palavras_unicas(self.frequenciateste)
 
-        self.caracteristicasfrase = self.extrator_palavras(['am', 'nov', 'dia'])
+        #print ("Palavras Unicas treinamento..:{}".format(self.palavras_unicas_treinamento))
+        #print("Palavras Unicas teste..:{}".format(self.palavras_unicas_teste))
+
+        #self.caracteristicasfrase = self.extrator_palavras(['am', 'nov', 'dia'])
 
         ### A função apply_features vai fazer o preenchimento dos registros dos dados previsores com os valores True ou False.
         self.basecompletatreinamento = nltk.classify.apply_features(self.extrator_palavras,
@@ -515,11 +529,87 @@ class IptablesLearning():
         #print (self.classificador.labels())
 
         ### Imprime os radicais da 10 palavras mais informativas (tem maior peso).
-        #print (self.classificador.show_most_informative_features(20))
+        #print (self.classificador.show_most_informative_features(10))
 
     def ImprimeAcuracia(self):
         ### Mostrar a precisão do nosso algoritmo.
         return nltk.classify.accuracy(self.classificador, self.basecompletateste)
+
+    def Avaliacao(self, matriz, beta=1):
+        #Compute various performance metrics.
+
+        # A dictionary with an entry for each metric.
+        performance = dict()
+
+        performance['confusionmatriz'] = matriz
+
+        #Number of unique labels; used for computing medias.
+        num_rotulos = len(matriz._confusion)
+
+        #Accurancy
+        performance['accuracy'] = matriz._correct / matriz._total
+        #print (performance['accuracy'])
+
+        #Recall
+        media = media_ponderada = 0
+        for label, index in matriz._indices.items():
+            verdadeiros_positivos = matriz._confusion[index][index]
+            total_positivos = sum(matriz._confusion[index])
+            if total_positivos == 0:
+                recall = int(verdadeiros_positivos == 0)
+            else:
+                recall = verdadeiros_positivos / total_positivos
+            media += recall
+            media_ponderada += recall * total_positivos
+            key = 'recall-{0}'.format(label)
+            performance[key] = recall
+        performance['media recall'] = media / num_rotulos
+        performance['recall ponderado'] = media_ponderada / matriz._total
+
+        #Precision
+        #Correctly classified positives / Total predicted as positive
+        media = media_ponderada = 0
+        for label, index in matriz._indices.items():
+            verdadeiros_positivos = matriz._confusion[index][index]
+            total_positivos = sum(matriz._confusion[index])
+            predicted_positive = 0 # substract verdadeiros_positivos to get false_positive
+            for i in range(num_rotulos):
+                predicted_positive += matriz._confusion[i][index]
+            if verdadeiros_positivos == predicted_positive == 0:
+                precision = 1
+            else:
+                precision = verdadeiros_positivos / predicted_positive
+
+            media += precision
+            media_ponderada += precision * total_positivos
+            key = 'precisao-{0}'.format(label)
+            performance[key] = precision
+        performance['media precisao'] = media / num_rotulos
+        performance['precisao ponderada'] = media_ponderada / matriz._total
+
+        # F1-score
+        # F1 = 2 * ((precision * recall) / (precision + recall))
+        media = media_ponderada = 0
+        for label, index in matriz._indices.items():
+            recall = performance['recall-{0}'.format(label)]
+            precision = performance['precisao-{0}'.format(label)]
+            total_positivos = sum(matriz._confusion[index])
+            numerador = (2 * precision * recall)
+            denominador = precision + recall
+            if denominador > 0:
+                f1 = numerador / denominador
+            else:
+                f1 = 0
+            media += f1
+            media_ponderada += f1 * total_positivos
+            key = 'f1-{0}'.format(label)
+            performance[key] = f1
+        performance['media f1'] = media / num_rotulos
+        performance['f1 ponderado'] = media_ponderada / matriz._total
+
+        #print (performance)
+        return performance
+
 
     def ImprimeErros(self):
         erros = []
@@ -535,11 +625,11 @@ class IptablesLearning():
         #obtido pela rede neural e a frase em questão.
 
         for (classe, resultado, frase) in erros:
-            print (classe, resultado, frase)
+            print ("Classe..:{} // Classificado..:{} Frase..:{}".format(classe, resultado, frase))
 
-    
+
     ### Cria a matriz de confusão.
-    def ImprimeMatrizConfusao(self):
+    def GeraMatrizConfusao(self):
         esperado = []
         previsto = []
 
@@ -549,7 +639,7 @@ class IptablesLearning():
             previsto.append(resultado)
             esperado.append(classe)
 
-        self.matriz = ConfusionMatrix(esperado, previsto)
+            self.matriz = ConfusionMatrix(esperado, previsto)
 
         ### retorna a matriz de confusão
         return self.matriz
@@ -675,12 +765,30 @@ if __name__ == "__main__":
     ### O valor 5 representa o tamanho dos blocos de particionamento utilizados pelo algoritmo k-pastas
     aplicacao.k_pastas(baseEmbaralhada, 5)
 
+    ### Cria matriz de confusão.
+    matrizconfusao=aplicacao.GeraMatrizConfusao()
 
-    ### Mostra a matriz de confusão
-    #print("A matriz de confusão..:{}".format(aplicacao.ImprimeMatrizConfusao()))
+    ### Calculando as metricas principais
+    performance = aplicacao.Avaliacao(matrizconfusao, 1)
 
-    ### Mostra a Acurária
-    #print("A acuracia..:{:.2f}%".format(aplicacao.ImprimeAcuracia()*100))
+    ### Imprime a Acuracia
+    #print ("Acuracia ..:{:.2f}%".format(aplicacao.ImprimeAcuracia()*100))
+
+    ### Mostra a porcentagem de acertos do classificador. A acurácia é a quantidade de acertos dividido pelo total.
+    #print ('Acurácia..:{:.2f}%'.format(performance['accuracy']*100))
+
+    ### Obtem uma lista de tuplas a partir da posição 1.
+    lista = list(performance.items())[1:]
+
+    #print ("lista..:{}".format(lista))
+
+    ###Imprime os resultados das métircas implementadas no método Avaliacao.
+    #for index in range(len(lista)):
+    #    print ("{}..:{:.2f}%".format(lista[index][0], lista[index][1]*100))
+
+    ###Mostra a matriz de confusão
+    print("A matriz de confusão..:{}".format(matrizconfusao))
+
 
     ### Imprime dos erros.
     #aplicacao.ImprimeErros()
