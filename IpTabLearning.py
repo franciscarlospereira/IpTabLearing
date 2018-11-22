@@ -102,12 +102,10 @@ class IptablesLearning():
         ### converte todas as palavras em minusculas.
         pergunta = pergunta.lower()
 
-        print('Frase em minuscula..:{}'.format(pergunta))
+        #print('Frase em minuscula..:{}'.format(pergunta))
 
         ### Remove Pontuações.
         pergunta = self.RemovePontuacoes(pergunta)
-
-        print ("perguntas sem pontuações..:{}".format(pergunta))
 
         testestemming = []
         stemer = nltk.stem.RSLPStemmer()
@@ -239,13 +237,13 @@ class IptablesLearning():
         elif (resultado == 'syn flooding'):
 
             lista_regras = []
-            regra1 = "echo 1 > / proc / sys / net / ipv4 / tcp_syncookies"
+            regra1 = "echo 1 > /proc/sys/net/ipv4/tcp_syncookies"
             lista_regras.append(regra1)
 
-            regra2 = "echo 2048 > / proc / sys / net / ipv4 / tcp_max_syn_backlog"
+            regra2 = "echo 2048 > /proc/sys/net/ipv4/tcp_max_syn_backlog"
             lista_regras.append(regra2)
 
-            regra3 = "echo 3 > / proc / sys / net / ipv4 / tcp_synack_retries"
+            regra3 = "echo 3 > /proc/sys/net/ipv4/tcp_synack_retries"
             lista_regras.append(regra3)
 
             regra4 = "iptables -N syn-flood"
