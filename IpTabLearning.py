@@ -102,10 +102,12 @@ class IptablesLearning():
         ### converte todas as palavras em minusculas.
         pergunta = pergunta.lower()
 
-        #print('Frase em minuscula..:{}'.format(pergunta))
+        print('Frase em minuscula..:{}'.format(pergunta))
 
         ### Remove Pontuações.
         pergunta = self.RemovePontuacoes(pergunta)
+
+        print ("perguntas sem pontuações..:{}".format(pergunta))
 
         testestemming = []
         stemer = nltk.stem.RSLPStemmer()
@@ -265,6 +267,7 @@ class IptablesLearning():
             ### atualiza o widget Label self.regras com as informações contidas na lista de string lista_regras.
             total_regras = ''
             for regras in lista_regras:
+                print ("regras..:{}".format(regras))
                 total_regras = total_regras + regras + '\n'
 
             self.regras.config(text=total_regras)
@@ -587,6 +590,29 @@ class IptablesLearning():
         performance['media precisao'] = media / num_rotulos
         performance['precisao ponderada'] = media_ponderada / matriz._total
 
+
+        '''
+        #F-Mesasure
+        #((1 + B ** 2) * precision * recall) / ((B ** 2) * precision) + recall)
+        media = media_ponderada  = 0
+        for label, index in matriz._indices.items():
+            recall = performance['recall-{0}'.format(label)]
+            precision = performance['precisao-{0}'.format(label)]
+            total_positivos = sum(matriz._confusion[index])
+            numer = ((1 + beta ** 2) * precision * recall)
+            denom = (((beta ** 2) * precision) + recall)
+            if denom  > 0:
+                f_measure = numer / denom
+            else:
+                f_measure = 0
+            media += f_measure
+            media_ponderada += f_measure * total_positivos
+            key = 'f-{0}'.format(label)
+            performance[key] = f_measure
+        performance['media f_measure'] = media / num_rotulos
+        performance['f_measure ponderado'] = media_ponderada / matriz._total
+        '''
+
         # F1-score
         # F1 = 2 * ((precision * recall) / (precision + recall))
         media = media_ponderada = 0
@@ -684,10 +710,13 @@ class IptablesLearning():
         return caracteristicas
 
     def RemovePontuacoes(self, documento):
-        pontuacoes = ['.', ',', '?', '!', ':', '...']
+        pontuacoes = ['.', ',', '?', '!', ':', '...', '-']
 
         for i in range(0, len(pontuacoes)):
-            documento = documento.replace(pontuacoes[i],"")
+            if pontuacoes[i] == '-':
+                documento = documento.replace(pontuacoes[i], " ")
+            else:
+                documento = documento.replace(pontuacoes[i],"")
 
         return documento
 
@@ -783,8 +812,8 @@ if __name__ == "__main__":
     #print ("lista..:{}".format(lista))
 
     ###Imprime os resultados das métircas implementadas no método Avaliacao.
-    #for index in range(len(lista)):
-    #    print ("{}..:{:.2f}%".format(lista[index][0], lista[index][1]*100))
+    for index in range(len(lista)):
+        print ("{}..:{:.2f}%".format(lista[index][0], lista[index][1]*100))
 
     ###Mostra a matriz de confusão
     print("A matriz de confusão..:{}".format(matrizconfusao))
